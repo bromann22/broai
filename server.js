@@ -3,6 +3,7 @@ process.noDeprecation = true;
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
+const fetch = require("node-fetch");
 
 const app = express();
 const CONFIG_FILE = "config.json";
@@ -10,6 +11,7 @@ const CONFIG_FILE = "config.json";
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+// Fungsi untuk memuat API Key
 const loadApiKey = () => {
     try {
         if (fs.existsSync(CONFIG_FILE)) {
@@ -22,26 +24,12 @@ const loadApiKey = () => {
     return null;
 };
 
+// Fungsi untuk menyimpan API Key
 const saveApiKey = (apiKey) => {
     fs.writeFileSync(CONFIG_FILE, JSON.stringify({ apiKey }, null, 2));
 };
 
-const promptForApiKey = async () => {
-    const readline = require("readline").createInterface({
-        input: process.stdin,
-        output: process.stdout,
-    });
-
-    return new Promise((resolve) => {
-        readline.question("\nAPI Key not found!\nGet your API Key at: https://aistudio.google.com/app/apikey\nEnter your Gemini API Key: ", (apiKey) => {
-            readline.close();
-            saveApiKey(apiKey);
-            console.log("\n✓ API Key saved successfully!\n");
-            resolve(apiKey);
-        });
-    });
-};
-
+// Endpoint untuk generate konten
 app.post("/api/generate", async (req, res) => {
     const prompt = req.body.prompt || "Write a story about a magical bag.";
     const apiKey = loadApiKey();
@@ -75,16 +63,19 @@ app.post("/api/generate", async (req, res) => {
     }
 });
 
+// Endpoint untuk mengakses index.html
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
 });
 
+// Fungsi untuk memulai server
 const initializeServer = async () => {
     console.clear();
     let apiKey = loadApiKey();
 
     if (!apiKey) {
-        apiKey = await promptForApiKey();
+        console.log("\nAPI Key not found!\nPlease configure your API Key in config.json");
+        return; // Keluar jika API Key belum ada
     }
 
     app.listen(3000, () => {
