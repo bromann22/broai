@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Broo Ai With Gemini | By Broman</title>
+  <!-- Font Awesome & Highlight.js -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css"
+    rel="stylesheet"
+  />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+
+  <style>
+    /* Reset & Base */
+    * {
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      font-family: 'Inter', sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #141414, #1a1a1a);
+      color: #f1f1f1;
+      min-height: 100vh;
+    }
+    /* Page Container: untuk membatasi lebar konten & memusatkan */
+    .page-container {
+      max-width: 900px;
+      min-height: 100vh;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 1rem 1rem 0.5rem 1rem;
+    }
+    .logo-section {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .logo {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #1f3ed8, #1f3ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(0,0,0,0.5);
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+    .logo:hover {
+      transform: scale(1.1);
+    }
+    .app-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+    .credit {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-top: 0.25rem;
+    }
+    .credit a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    .credit a:hover {
+      color: #fff;
+    }
+    /* Chat Container */
+    .chat-container {
+      flex: 1;
+      overflow-y: auto;
+      margin-top: 1rem; /* memberi jarak dari header */
+      margin-bottom: 0.75rem;
+      padding: 0 1rem;
+    }
+    .welcome-message {
+      text-align: center;
+      margin: 0 auto 1rem auto;
+      max-width: 600px;
+      color: #bbb;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 1rem;
+      border-radius: 0.75rem;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: fadeIn 1s ease-out;
+    }
+    .welcome-message h2 {
+      color: #fff;
+      margin-bottom: 0.25rem;
+      font-size: 1rem;
+    }
+    /* Chat Messages */
+    .message {
+      max-width: 85%;
+      margin: 0.75rem auto;
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255,255,255,0.1);
+      animation: slideIn 0.3s ease-out;
+      position: relative;
+      word-wrap: break-word;
+      background: rgba(30, 30, 30, 0.8);
+    }
+    .user-message {
+      background: rgba(60, 60, 60, 0.9);
+      color: #fff;
+      border-bottom-right-radius: 0.5rem;
+    }
+    .assistant-message {
+      background: rgba(20, 20, 20, 0.8);
+      color: #e0e0e0;
+      border-bottom-left-radius: 0.5rem;
+    }
+    .message pre {
+      background: #1e1e1e;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      overflow-x: auto;
+      position: relative;
+    }
+    .copy-button {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: rgba(99, 102, 241, 0.2);
+      border: none;
+      border-radius: 0.3rem;
+      padding: 0.3rem 0.6rem;
+      color: #fff;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .copy-button:hover {
+      background: rgba(99, 102, 241, 0.4);
+    }
+    .message code {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9em;
+    }
+    /* Typing Indicator */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(30, 30, 30, 0.8);
+      border-radius: 1rem;
+      margin: 0.75rem auto;
+      max-width: 85%;
+      animation: slideIn 0.3s ease-out;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: #fff;
+      border-radius: 50%;
+      animation: typingBounce 1.4s infinite ease-in-out both;
+    }
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    .typing-dot:nth-child(3) { animation-delay: 0s; }
+    @keyframes typingBounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    /* Input Container */
+    .input-container {
+      margin-top: auto;
+      padding: 0.75rem;
+      background: rgba(20, 20, 20, 0.9);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .input-wrapper {
+      display: flex;
+      gap: 0.5rem;
+      max-width: 600px;
+      margin: 0 auto;
+      background: rgba(30, 30, 30, 0.7);
+      padding: 0.5rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      align-items: center;
+    }
+    /* Tombol Upload Foto */
+    .upload-btn {
+      background: transparent;
+      border: none;
+      color: #e0e0e0;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    #prompt {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      border-radius: 9999px;
+      border: none;
+      background: transparent;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    #prompt::placeholder {
+      color: #888;
+    }
+    button.send-btn {
+      background: linear-gradient(135deg, #ffffff, #ffffff);
+      color: #000;
+      border: none;
+      border-radius: 9999px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+    button.send-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    button.send-btn:active {
+      transform: translateY(0);
+    }
+    button.send-btn:disabled {
+      background: #374151;
+      cursor: not-allowed;
+      transform: none;
+    }
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 4rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4f46e5;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 1000;
+    }
+    .toast.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo-section">
+        <div class="logo" title="Klik untuk interaksi keren!">
+          <i class="fas fa-cat"></i>
+        </div>
+        <div class="app-title">Broo Ai With Gemini</div>
+        <div class="credit">
+          <a href="https://www.instagram.com/emann_0x" target="_blank">Powered by Broman</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="chat-container" id="chat-container">
+      <div class="welcome-message">
+        <h2>Welcome to Broo Ai With Gemini!</h2>
+        <p>I'm here to help you. Feel free to ask me anything.</p>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <!-- Input Container -->
+    <div class="input-container">
+      <div class="input-wrapper">
+        <!-- Tombol Upload Foto -->
+        <label for="file-input" class="upload-btn">
+          <i class="fas fa-image"></i>
+        </label>
+        <input type="file" id="file-input" accept="image/*" style="display: none;" />
+        
+        <input 
+          type="text" 
+          id="prompt" 
+          placeholder="Type your message..."
+          onkeypress="if(event.key === 'Enter' && !event.shiftKey){ event.preventDefault(); generateContent(); }"
+        />
+        <button class="send-btn" onclick="generateContent()" id="submit-btn">
+          <i class="fas fa-paper-plane"></i>
+          <span>Send</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    marked.setOptions({
+      highlight: function(code, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+          return hljs.highlight(code, { language: lang }).value;
+        }
+        return hljs.highlightAuto(code).value;
+      },
+      breaks: true
+    });
+    
+    let isGenerating = false;
+    
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+    
+    function appendMessage(content, isUser = false) {
+      const chatContainer = document.getElementById('chat-container');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
+      
+      if (isUser) {
+        messageDiv.textContent = content;
+      } else {
+        messageDiv.innerHTML = marked.parse(content);
+        messageDiv.querySelectorAll('pre').forEach((pre) => {
+          const copyButton = document.createElement('button');
+          copyButton.className = 'copy-button';
+          copyButton.innerHTML = '<i class="fas fa-copy"></i><span>Copy</span>';
+          copyButton.onclick = () => {
+            const code = pre.querySelector('code').innerText;
+            navigator.clipboard.writeText(code)
+              .then(() => showToast('Copied to clipboard!'))
+              .catch(() => showToast('Failed to copy!'));
+          };
+          pre.appendChild(copyButton);
+          hljs.highlightElement(pre.querySelector('code'));
+        });
+      }
+      
+      chatContainer.appendChild(messageDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
+    function appendImage(imageData, isUser = false) {
+      const chatContainer = document.getElementById('chat-container');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
+      const img = document.createElement('img');
+      img.src = imageData;
+      img.style.maxWidth = "100%";
+      img.style.borderRadius = "0.5rem";
+      messageDiv.appendChild(img);
+      chatContainer.appendChild(messageDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
+    function showTypingIndicator() {
+      const chatContainer = document.getElementById('chat-container');
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'typing-indicator';
+      typingDiv.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      `;
+      chatContainer.appendChild(typingDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      return typingDiv;
+    }
+    
+    function removeTypingIndicator(indicator) {
+      if (indicator && indicator.parentElement) {
+        indicator.remove();
+      }
+    }
+    
+    async function generateContent() {
+      if (isGenerating) return;
+      
+      const promptInput = document.getElementById('prompt');
+      const submitBtn = document.getElementById('submit-btn');
+      const prompt = promptInput.value.trim();
+      
+      if (!prompt) return;
+      
+      isGenerating = true;
+      promptInput.disabled = true;
+      submitBtn.disabled = true;
+      
+      appendMessage(prompt, true);
+      const typingIndicator = showTypingIndicator();
+      promptInput.value = '';
+      
+      try {
+        const response = await fetch("http://localhost:3000/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: prompt })
+        });
+        
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        removeTypingIndicator(typingIndicator);
+        
+        if (data.response) {
+          appendMessage(data.response);
+        } else {
+          appendMessage("Sorry, there was an error processing your request.");
+        }
+      } catch (error) {
+        removeTypingIndicator(typingIndicator);
+        appendMessage("Error connecting to the server. Please try again.");
+        console.error('Error:', error);
+      } finally {
+        isGenerating = false;
+        promptInput.disabled = false;
+        submitBtn.disabled = false;
+        promptInput.focus();
+      }
+    }
+    
+    // Fungsi untuk upload foto
+    function handleFileUpload() {
+      const fileInput = document.getElementById('file-input');
+      if (fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        if (!file.type.startsWith('image/')) {
+          alert("Silakan pilih file gambar.");
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const imageData = e.target.result;
+          appendImage(imageData, true);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    
+    document.getElementById('file-input').addEventListener('change', handleFileUpload);
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('prompt').focus();
+    });
+  </script>
+</body>
+</html>
